@@ -2,84 +2,89 @@
 
 # ⚡ issa autopilot
 
-**Автоматизация работы с лентой X прямо в браузере:<br>лайк ❤️ → закладка 🔖 → AI-ответ 💬 — с лимитами, паузами и аварийной остановкой.**
+**X feed automation right in your browser:<br>like ❤️ → bookmark 🔖 → AI reply 💬 — with daily limits, delays and an emergency stop.**
 
 [![Chrome](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?logo=javascript&logoColor=black)](#)
 [![AI](https://img.shields.io/badge/AI-OpenRouter-6655D9)](https://openrouter.ai)
-[![Tests](https://img.shields.io/badge/tests-node%20--test-339933?logo=node.js&logoColor=white)](#-тесты)
+[![Tests](https://img.shields.io/badge/tests-node%20--test-339933?logo=node.js&logoColor=white)](#-tests)
 [![License](https://img.shields.io/badge/license-PolyForm%20NC%201.0-lightgrey)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.2.0-c5ff4a)](manifest.json)
 
-[Возможности](#-возможности) · [Как это работает](#-как-это-работает) · [Установка](#-установка) · [Настройки](#%EF%B8%8F-настройки) · [Структура](#-структура-проекта)
+[🇷🇺 Русский](README.ru.md) · **🇬🇧 English**
+
+[Features](#-features) · [How it works](#-how-it-works) · [Installation](#-installation) · [Settings](#%EF%B8%8F-settings) · [Structure](#-project-structure)
 
 </div>
 
 ---
 
-## ✨ Возможности
+## ✨ Features
 
 | | |
 |---|---|
-| 🤖 **AI-ответы** | Короткие ответы по теме поста через любой OpenAI-совместимый API (по умолчанию — бесплатный OpenRouter) |
-| ❤️ **Автолайки** | Пост лайкается перед ответом; уже лайкнутые посты не трогаются |
-| 🔖 **Автозакладки** | Пост уходит в закладки — даже если кнопка спрятана в меню «Поделиться» |
-| 🎛️ **3 режима** | Черновик → Подтверждение → Автоматический: выбирайте уровень контроля |
-| ⏱️ **Лимиты и паузы** | Дневной лимит, случайные задержки, cooldown на автора, размер раунда |
-| 🛑 **Аварийная остановка** | Одна кнопка останавливает всё — на любой вкладке |
-| 📊 **Дашборд** | Ответы, лайки, закладки за день, график по дням и цветные логи |
-| 🧠 **Несколько промптов** | Можно задать варианты prompt — для каждого поста выбирается случайный |
+| 🤖 **AI replies** | Short, on-topic replies via any OpenAI-compatible API (free OpenRouter by default) |
+| ❤️ **Auto-like** | The post is liked before replying; already-liked posts are left alone |
+| 🔖 **Auto-bookmark** | The post is bookmarked — even when the button is hidden in the Share menu |
+| 🎛️ **3 modes** | Draft → Confirm → Automatic: choose how much control you keep |
+| ⏱️ **Limits & delays** | Daily cap, randomized delays, per-author cooldown, batch size |
+| 🛑 **Emergency stop** | One button stops everything — on any tab |
+| 📊 **Dashboard** | Replies, likes and bookmarks per day, a daily chart and color-coded logs |
+| 🧠 **Multiple prompts** | Define prompt variants — a random one is picked for each post |
 
-## 🔄 Как это работает
+## 🔄 How it works
 
 ```mermaid
 flowchart LR
-    A[📰 Видимая лента X] --> B{Фильтр целей}
-    B -- реклама / репост / ответ / свой пост / cooldown --> X[⏭️ пропуск]
-    B -- подходит --> C[🧠 AI: отвечать?]
-    C -- нет --> X
-    C -- да --> D[❤️ Лайк]
-    D --> E[🔖 Закладка]
-    E --> F[💬 Текст в окне ответа]
-    F --> G{Режим}
-    G -- Черновик --> H[✋ Публикуете сами]
-    G -- Подтверждение --> I[👀 Ждёт вашей отправки]
-    G -- Авто --> J[🚀 Публикация после паузы]
+    A[📰 Visible X feed] --> B{Target filter}
+    B -- ad / repost / reply / own post / cooldown --> X[⏭️ skip]
+    B -- matches --> C[🧠 AI: reply?]
+    C -- no --> X
+    C -- yes --> D[❤️ Like]
+    D --> E[🔖 Bookmark]
+    E --> F[💬 Text in reply box]
+    F --> G{Mode}
+    G -- Draft --> H[✋ You post it]
+    G -- Confirm --> I[👀 Waits for you to send]
+    G -- Auto --> J[🚀 Posts after a delay]
 ```
 
-1. Расширение собирает подходящие посты из видимой ленты (и докручивает её, если целей мало).
-2. AI решает, стоит ли отвечать, и готовит короткий ответ.
-3. Если ответ подходит — пост **лайкается** и **добавляется в закладки**.
-4. Открывается окно ответа, текст вставляется и — в зависимости от режима — публикуется.
+1. The extension collects suitable posts from the visible feed (and scrolls for more if needed).
+2. The AI decides whether a reply makes sense and drafts a short one.
+3. If the reply passes — the post is **liked** and **bookmarked**.
+4. The reply box opens, the text is inserted and — depending on the mode — published.
 
-## 🎛️ Режимы
+## 🎛️ Modes
 
-| Режим | Лайк + закладка | Публикация | Итерации |
+| Mode | Like + bookmark | Publishing | Iterations |
 |---|:---:|---|:---:|
-| 📝 **Черновик** | ✅ | Вручную | 1 |
-| 👀 **Подтверждение** | ✅ | Вы нажимаете «Ответить» сами | несколько |
-| 🚀 **Автоматический** | ✅ | Сама, после случайной паузы | до дневного лимита |
+| 📝 **Draft** (`Черновик`) | ✅ | Manual | 1 |
+| 👀 **Confirm** (`Подтверждение`) | ✅ | You click "Reply" yourself | several |
+| 🚀 **Automatic** (`Автоматический`) | ✅ | Automatic, after a random delay | up to daily cap |
 
-Лайк и закладку можно выключить по отдельности в разделе **«Режим и аккаунт»**.
+Like and bookmark can each be turned off in the **"Режим и аккаунт"** (Mode & account) section.
 
-## 🚀 Установка
+> [!NOTE]
+> The extension UI is in Russian. Button names are given below with translations.
 
-1. **Скачать:** зелёная кнопка **Code → Download ZIP**, распаковать.
-2. **Ключ:** создать API key в OpenRouter — <https://openrouter.ai/settings/keys>.
-3. Открыть `chrome://extensions` и включить **Developer mode**.
-4. **Load unpacked** → выбрать распакованную папку (ту, где лежит `manifest.json`).
-5. Открыть настройки расширения → **«Выбрать OpenRouter Free»** → вставить ключ → **«Сохранить»**.
-6. Открыть (или обновить) x.com и нажать **«Собрать и запустить»** в панели **`[ ISSA ]`** справа.
+## 🚀 Installation
+
+1. **Download:** green **Code → Download ZIP** button, then unzip.
+2. **Key:** create an OpenRouter API key — <https://openrouter.ai/settings/keys>.
+3. Open `chrome://extensions` and enable **Developer mode**.
+4. **Load unpacked** → select the unzipped folder (the one containing `manifest.json`).
+5. Open the extension settings → **"Выбрать OpenRouter Free"** (Select OpenRouter Free) → paste the key → **"Сохранить настройки"** (Save).
+6. Open (or reload) x.com and click **"Собрать и запустить"** (Collect & run) in the **`[ ISSA ]`** panel on the right.
 
 > [!TIP]
-> Начните с режима **Черновик**, чтобы посмотреть, какие ответы генерирует AI, прежде чем включать автоматику.
+> Start in **Draft** mode to see what the AI generates before turning on automation.
 
-## ⚙️ Настройки
+## ⚙️ Settings
 
 <details>
-<summary><b>AI-провайдер</b></summary>
+<summary><b>AI provider</b></summary>
 
-По умолчанию используется OpenRouter Free Router:
+OpenRouter Free Router is used by default:
 
 ```text
 Endpoint: https://openrouter.ai/api/v1
@@ -87,62 +92,70 @@ Path:     /chat/completions
 Model:    openrouter/free
 ```
 
-Для локальной модели (например, Hermes) замените endpoint на `http://127.0.0.1:8642`, а path — на `/v1/chat/completions`.
-Конфигурация и ключ хранятся только локально в `chrome.storage` и не пишутся в логи.
+For a local model (e.g. Hermes) set the endpoint to `http://127.0.0.1:8642` and the path to `/v1/chat/completions`.
+Config and API key are stored locally in `chrome.storage` only and are never written to logs.
 
 </details>
 
 <details>
-<summary><b>Ограничения по умолчанию</b></summary>
+<summary><b>Default limits</b></summary>
 
-| Параметр | Значение |
+| Setting | Value |
 |---|---|
-| Постов за раунд | 5 |
-| Дневной лимит ответов | 20 |
-| Пауза между постами | 45–120 с |
-| Пауза перед автоотправкой | 3–8 с |
-| Cooldown на автора | 24 ч |
-| Минимальная длина поста | 31 символ |
+| Posts per batch | 5 |
+| Daily reply cap | 20 |
+| Delay between posts | 45–120 s |
+| Delay before auto-send | 3–8 s |
+| Per-author cooldown | 24 h |
+| Minimum post length | 31 chars |
 
 </details>
 
 <details>
-<summary><b>Промпты</b></summary>
+<summary><b>Prompts</b></summary>
 
-Основной prompt просит модель вернуть JSON `{"reply":"...","shouldReply":true}`.
-В поле «Дополнительные prompt-варианты» можно перечислить несколько вариантов через `---` — для каждого поста выбирается случайный.
+The main prompt asks the model to return JSON `{"reply":"...","shouldReply":true}`.
+In the additional prompt variants field you can list several variants separated by `---` — a random one is used for each post.
 
 </details>
 
-## 📊 Дашборд
+## 📊 Dashboard
 
-Вкладка **«Дашборд»** показывает ответы, лайки и закладки за сегодня, прогресс дневного лимита, AI-запросы и ошибки, а также график ответов по дням. В логах действия помечены как `LIKE OK` / `BOOKMARK OK` (или `ERROR` с причиной).
+The **"Дашборд"** (Dashboard) tab shows today's replies, likes and bookmarks, daily cap progress, AI requests and errors, and a chart of replies per day. Logs mark actions as `LIKE OK` / `BOOKMARK OK` (or `ERROR` with a reason).
 
-## 📁 Структура проекта
+## 📁 Project structure
 
 ```text
 issa-autopilot/
 ├── manifest.json        # Manifest V3
 ├── package.json         # npm test
 ├── src/
-│   ├── background.js    # service worker: запросы к AI, конфиг, аварийная остановка
-│   ├── content.js       # работа с лентой X: сбор целей, лайк, закладка, ответ
-│   ├── domain.js        # чистая логика: фильтры, лимиты, парсинг ответа AI
-│   ├── options.html     # дашборд и настройки
+│   ├── background.js    # service worker: AI requests, config, emergency stop
+│   ├── content.js       # works with the X feed: targets, like, bookmark, reply
+│   ├── domain.js        # pure logic: filters, limits, AI response parsing
+│   ├── options.html     # dashboard & settings
 │   └── options.js
 └── tests/
-    └── domain.test.js   # unit-тесты на node:test
+    └── domain.test.js   # unit tests with node:test
 ```
 
-## 🧪 Тесты
+## 🧪 Tests
 
 ```bash
 npm test
 ```
 
-Нужен Node.js 18+; внешних зависимостей нет.
+Requires Node.js 18+; no external dependencies.
 
-## ⚠️ Важно
+## ⚠️ Important
 
-- Интерфейс X часто меняется — если лайк или закладка не сработали, это видно в логе, а ответ продолжается.
-- Автоматизация действий нарушает [правила X](https://help.x.com/en/rules-and-policies/x-automation) при злоупотреблении: X ограничивает число действий в сутки и может заблокировать аккаунт. Держите лимиты и паузы умеренными и используйте на свой риск.
+- X's interface changes often — if a like or bookmark fails, it shows up in the log and the reply continues.
+- Abusive automation violates [X's rules](https://help.x.com/en/rules-and-policies/x-automation): X limits daily actions and may restrict your account. Keep limits and delays moderate and use at your own risk.
+
+## 🙏 Credits
+
+Based on [tim2cc/x_reply](https://github.com/tim2cc/x_reply) (Volya Replywise). This version adds automatic likes, bookmarks and an extended dashboard.
+
+## 📄 License
+
+[PolyForm Noncommercial License 1.0.0](LICENSE) — same as the original. Free to use, copy, modify and distribute for noncommercial purposes only.
