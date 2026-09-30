@@ -151,11 +151,3 @@ Requires Node.js 18+; no external dependencies.
 
 - X's interface changes often — if a like or bookmark fails, it shows up in the log and the reply continues.
 - Abusive automation violates [X's rules](https://help.x.com/en/rules-and-policies/x-automation): X limits daily actions and may restrict your account. Keep limits and delays moderate and use at your own risk.
-
-## 🙏 Credits
-
-Based on [tim2cc/x_reply](https://github.com/tim2cc/x_reply) (Volya Replywise). This version adds automatic likes, bookmarks and an extended dashboard.
-
-## 📄 License
-
-[PolyForm Noncommercial License 1.0.0](LICENSE) — same as the original. Free to use, copy, modify and distribute for noncommercial purposes only.
