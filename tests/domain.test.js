@@ -97,3 +97,22 @@ test('engageActions likes and bookmarks by default and respects toggles', () => 
   assert.deepEqual(engageActions({ bookmarkPosts: false }), ['like']);
   assert.deepEqual(engageActions({ likePosts: false, bookmarkPosts: false }), []);
 });
+
+test('isAdLabel recognizes X ad labels in English and Russian only as exact labels', () => {
+  const { isAdLabel } = require('../src/domain.js');
+  for (const label of ['Ad', 'ad', 'Promoted', 'Promoted by Acme', 'Реклама', 'Продвигается']) assert.equal(isAdLabel(label), true, label);
+  for (const text of ['', 'Adam', 'This ad is everywhere', 'Реклама на билбордах', '2h']) assert.equal(isAdLabel(text), false, text);
+});
+
+test('isPromotedSignals flags ads by label or missing timestamp', () => {
+  const { isPromotedSignals } = require('../src/domain.js');
+  assert.equal(isPromotedSignals({ labels: ['Alice', '@alice', '2h'], hasTimestamp: true, hasStatusLink: true }), false);
+  assert.equal(isPromotedSignals({ labels: ['Brand', '@brand', 'Ad'], hasTimestamp: true, hasStatusLink: true }), true);
+  assert.equal(isPromotedSignals({ labels: ['Brand', '@brand'], hasTimestamp: false, hasStatusLink: true }), true);
+  assert.equal(isPromotedSignals({ labels: [], hasTimestamp: false, placementTracking: true }), true);
+});
+
+test('promoted posts are never queued for like, bookmark or reply', () => {
+  assert.equal(targetReason({ ...valid, promoted: true }), 'promoted');
+  assert.deepEqual(collectTargets([{ ...valid, promoted: true }, { ...valid, postId: '2', handle: 'bob' }]).map((post) => post.postId), ['2']);
+});
