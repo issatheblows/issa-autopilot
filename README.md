@@ -49,7 +49,7 @@ flowchart LR
     G -- Auto --> J[🚀 Posts after a delay]
 ```
 
-1. The extension collects suitable posts from the visible feed (and scrolls for more if needed).
+1. The extension collects suitable posts from the visible feed (and scrolls for more if needed). **Ads are skipped** — posts with the `Ad` / `Promoted` / `Реклама` label or without a timestamp never get a like, bookmark or reply; they are re-checked right before every action and logged as `AD skip`.
 2. The AI decides whether a reply makes sense and drafts a short one.
 3. If the reply passes — the post is **liked** and **bookmarked**.
 4. The reply box opens, the text is inserted and — depending on the mode — published.
