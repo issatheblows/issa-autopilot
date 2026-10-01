@@ -39,6 +39,20 @@
     return web ? { handle: '', postId: web[1], postUrl: `https://x.com/i/web/status/${web[1]}` } : null;
   }
 
+  // Labels X shows instead of (or next to) the timestamp on promoted posts.
+  const AD_LABEL_RE = /^(?:ad|ads|promoted|promoted by .{1,60}|реклама|рекламный пост|продвигается|продвигаемый пост|спонсировано|sponsored)$/i;
+
+  function isAdLabel(value) {
+    return AD_LABEL_RE.test(String(value || '').replace(/\s+/g, ' ').trim());
+  }
+
+  // Pure decision from signals collected from a feed card (see content.js isPromotedCard).
+  function isPromotedSignals(signals = {}) {
+    if (signals.placementTracking && !signals.hasTimestamp) return true;
+    if ((signals.labels || []).some(isAdLabel)) return true;
+    return signals.hasStatusLink === true && signals.hasTimestamp === false;
+  }
+
   function targetReason(post, options = {}) {
     if (!post || !post.postId || !post.handle) return 'meta';
     if (post.promoted) return 'promoted';
@@ -150,7 +164,7 @@
     return { ok: true };
   }
 
-  const api = { DEFAULTS, normHandle, parseStatusHref, targetReason, collectTargets, dayKey, delayMs, parsePrompts, parseReply, isSafetyOnlyResponse, validateReply, assessReplyNaturalness, formatReply, engageActions, canAutoPublish };
+  const api = { DEFAULTS, normHandle, isAdLabel, isPromotedSignals, parseStatusHref, targetReason, collectTargets, dayKey, delayMs, parsePrompts, parseReply, isSafetyOnlyResponse, validateReply, assessReplyNaturalness, formatReply, engageActions, canAutoPublish };
   if (typeof module !== 'undefined') module.exports = api;
   if (typeof window !== 'undefined') window.XAR = api;
   else if (typeof globalThis !== 'undefined') globalThis.XAR = api;
