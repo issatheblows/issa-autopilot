@@ -116,3 +116,71 @@ test('promoted posts are never queued for like, bookmark or reply', () => {
   assert.equal(targetReason({ ...valid, promoted: true }), 'promoted');
   assert.deepEqual(collectTargets([{ ...valid, promoted: true }, { ...valid, postId: '2', handle: 'bob' }]).map((post) => post.postId), ['2']);
 });
+
+// ---- Replies to comments under your own posts ----
+const comment = { handle: 'carol', postId: '50', text: 'how did you set this up?', afterFocal: true, replyTo: [] };
+
+test('parseReplyingTo extracts handles from English and Russian labels', () => {
+  const { parseReplyingTo } = require('../src/domain.js');
+  assert.deepEqual(parseReplyingTo('Replying to @Me and @bob'), ['me', 'bob']);
+  assert.deepEqual(parseReplyingTo('В ответ @me'), ['me']);
+  assert.deepEqual(parseReplyingTo('just a post with @me'), []);
+});
+
+test('isDiscoverHeading recognizes the recommendations block below a conversation', () => {
+  const { isDiscoverHeading } = require('../src/domain.js');
+  assert.equal(isDiscoverHeading('Discover more Sourced from across X'), true);
+  assert.equal(isDiscoverHeading('Откройте для себя больше'), true);
+  assert.equal(isDiscoverHeading('Most relevant replies'), false);
+});
+
+test('commentTargetReason accepts comments under my post and rejects the rest', () => {
+  const { commentTargetReason } = require('../src/domain.js');
+  const conv = { context: 'conversation', ownerHandle: 'me', myHandle: '@Me' };
+  assert.equal(commentTargetReason(comment, conv), null);
+  assert.equal(commentTargetReason(comment, { ...conv, myHandle: '' }), 'no-handle');
+  assert.equal(commentTargetReason(comment, { ...conv, ownerHandle: 'someone' }), 'not-my-post');
+  assert.equal(commentTargetReason({ ...comment, handle: 'me' }, conv), 'self');
+  assert.equal(commentTargetReason({ ...comment, afterFocal: false }, conv), 'above-post');
+  assert.equal(commentTargetReason({ ...comment, discover: true }, conv), 'discover');
+  assert.equal(commentTargetReason({ ...comment, promoted: true }, conv), 'promoted');
+  assert.equal(commentTargetReason({ ...comment, answeredByMe: true }, conv), 'answered');
+  assert.equal(commentTargetReason({ ...comment, replyTo: ['bob'] }, conv), 'not-reply-to-me');
+  assert.equal(commentTargetReason({ ...comment, text: '' }, conv), 'short');
+  assert.equal(commentTargetReason(comment, { ...conv, replied: { 50: 1 } }), 'replied');
+});
+
+test('on notifications only replies addressed to me are comment targets', () => {
+  const { commentTargetReason } = require('../src/domain.js');
+  const opts = { context: 'notifications', myHandle: 'me' };
+  assert.equal(commentTargetReason({ ...comment, afterFocal: false, replyTo: ['me'] }, opts), null);
+  assert.equal(commentTargetReason({ ...comment, afterFocal: false, replyTo: [] }, opts), 'not-reply-to-me');
+});
+
+test('collectCommentTargets dedupes, bounds and tags comments; replies to one author are allowed', () => {
+  const { collectCommentTargets } = require('../src/domain.js');
+  const opts = { context: 'conversation', ownerHandle: 'me', myHandle: 'me' };
+  const posts = [comment, comment, { ...comment, postId: '51' }, { ...comment, postId: '52' }];
+  const out = collectCommentTargets(posts, { ...opts, max: 2 });
+  assert.deepEqual(out.map((p) => p.postId), ['50', '51']);
+  assert.equal(out[0].kind, 'comment');
+  assert.equal(collectCommentTargets(posts, { ...opts, max: 0 }).length, 0);
+});
+
+test('comments are liked but never bookmarked', () => {
+  const { commentEngageActions, DEFAULTS } = require('../src/domain.js');
+  assert.deepEqual(commentEngageActions(DEFAULTS), ['like']);
+  assert.deepEqual(commentEngageActions({ likeComments: false, bookmarkPosts: true }), []);
+});
+
+test('comment replies have their own daily budget', () => {
+  const { dailyBudget } = require('../src/domain.js');
+  const day = dayKey();
+  const config = { mode: 'auto', dailyCap: 20, batchSize: 5, commentDailyCap: 3, commentBatchSize: 10 };
+  const state = { day, sentToday: 20, commentsRepliedToday: 1 };
+  assert.deepEqual(dailyBudget(config, state, 'comment'), { cap: 3, used: 1, left: 2, limit: 2 });
+  assert.equal(dailyBudget(config, state, 'post').limit, 0);
+  assert.deepEqual(canAutoPublish(config, state, 'comment'), { ok: true });
+  assert.deepEqual(canAutoPublish(config, { ...state, commentsRepliedToday: 3 }, 'comment'), { ok: false, reason: 'daily-cap' });
+  assert.equal(dailyBudget(config, { day: '2000-01-01', commentsRepliedToday: 3 }, 'comment').left, 3);
+});
