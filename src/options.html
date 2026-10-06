@@ -204,14 +204,14 @@ button.danger:hover{background:#fff0f1;border-color:#e9b9c0;color:#a92f40}
 <div class="wrap">
 <header>
   <h1>issa</h1>
-  <p class="sub">Лайк, закладка и ответ под постами в X — управление и диагностика</p>
+  <p class="sub">Лайк, закладка и ответ под постами в X, плюс ответы на комментарии под вашими постами — управление и диагностика</p>
 </header>
 
 <nav class="tabs" aria-label="Разделы расширения"><button class="tab active" type="button" data-tab="dashboard">Дашборд</button><button class="tab" type="button" data-tab="settings">Настройки</button></nav>
 
 <section id="tab-dashboard" class="tab-panel">
-  <div class="dash-grid"><article class="metric"><div class="metric-label">Отправлено сегодня</div><div id="dash-sent" class="metric-value accent">—</div></article><article class="metric"><div class="metric-label">Лайков сегодня</div><div id="dash-liked" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Закладок сегодня</div><div id="dash-bookmarked" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Дневной лимит</div><div id="dash-cap" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Всего ответов</div><div id="dash-total" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Cooldown авторов</div><div id="dash-cooldown" class="metric-value">—</div></article><article class="metric"><div class="metric-label">AI-запросы</div><div id="dash-ai-requests" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Ошибки AI</div><div id="dash-ai-errors" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Завершено раундов</div><div id="dash-runs" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Пропущено целей</div><div id="dash-skipped" class="metric-value">—</div></article></div>
-  <div class="dash-layout"><section class="dash-card"><h2>Дневной прогресс</h2><div class="progress"><span id="dash-progress"></span></div><div class="dash-meta"><span id="dash-progress-label">—</span><span id="dash-mode">—</span></div><div class="dash-actions"><button id="dash-settings" type="button">Открыть настройки</button><button id="dash-clear-logs" type="button">Очистить логи</button></div></section><section class="dash-card"><h2>Состояние системы</h2><ul class="dash-list"><li id="dash-batch">Batch: —</li><li id="dash-last">Последнее событие: —</li><li id="dash-events">Событий в журнале: —</li><li id="dash-cooldown-detail">Cooldown: —</li></ul></section></div>
+  <div class="dash-grid"><article class="metric"><div class="metric-label">Отправлено сегодня</div><div id="dash-sent" class="metric-value accent">—</div></article><article class="metric"><div class="metric-label">Лайков сегодня</div><div id="dash-liked" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Закладок сегодня</div><div id="dash-bookmarked" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Дневной лимит</div><div id="dash-cap" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Всего ответов</div><div id="dash-total" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Cooldown авторов</div><div id="dash-cooldown" class="metric-value">—</div></article><article class="metric"><div class="metric-label">AI-запросы</div><div id="dash-ai-requests" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Ошибки AI</div><div id="dash-ai-errors" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Завершено раундов</div><div id="dash-runs" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Пропущено целей</div><div id="dash-skipped" class="metric-value">—</div></article><article class="metric"><div class="metric-label">Ответов на комментарии сегодня</div><div id="dash-comments" class="metric-value accent">—</div></article><article class="metric"><div class="metric-label">Лайков комментариев сегодня</div><div id="dash-comment-likes" class="metric-value">—</div></article></div>
+  <div class="dash-layout"><section class="dash-card"><h2>Дневной прогресс</h2><div class="progress"><span id="dash-progress"></span></div><div class="dash-meta"><span id="dash-progress-label">—</span><span id="dash-mode">—</span></div><div class="dash-actions"><button id="dash-settings" type="button">Открыть настройки</button><button id="dash-clear-logs" type="button">Очистить логи</button></div></section><section class="dash-card"><h2>Состояние системы</h2><ul class="dash-list"><li id="dash-batch">Batch: —</li><li id="dash-last">Последнее событие: —</li><li id="dash-events">Событий в журнале: —</li><li id="dash-cooldown-detail">Cooldown: —</li><li id="dash-comment-cap">Комментарии: —</li></ul></section></div>
   <section class="dash-card" style="margin-top:16px"><h2>Последние операции</h2><ul id="dash-recent" class="dash-list"><li>Загрузка…</li></ul></section>
   <section class="dash-card" style="margin-top:16px"><h2>История ответов · всё время</h2><div id="dash-chart" class="chart-wrap"><div class="chart-empty">Загрузка…</div></div></section>
 </section>
@@ -239,6 +239,7 @@ button.danger:hover{background:#fff0f1;border-color:#e9b9c0;color:#a92f40}
     <div class="actions">
       <button id="save" class="primary">Сохранить настройки</button>
       <button id="start">Запустить на текущей вкладке</button>
+      <button id="startComments">Ответить на комментарии</button>
       <button id="stop" class="danger">Аварийно остановить</button>
     </div>
     <div id="status"></div>
@@ -255,6 +256,18 @@ button.danger:hover{background:#fff0f1;border-color:#e9b9c0;color:#a92f40}
       <label><span class="lbl">Перед автоотправкой, от секунд</span><input id="preSendMinSec" type="number" min="1"></label>
       <label><span class="lbl">Перед автоотправкой, до секунд</span><input id="preSendMaxSec" type="number" min="1"></label>
     </div>
+  </section>
+
+  <section class="section">
+    <h2>Ответы на комментарии</h2>
+    <p class="note">Откройте свой пост в X (или Уведомления → Упоминания) и нажмите «Ответить на комментарии» на панели issa. Комментарий лайкается и получает короткий AI-ответ — без закладок. На каждый комментарий отвечаем один раз; свои комментарии и уже отвеченные вами пропускаются. Режим (черновик / подтверждение / авто) и паузы — общие.</p>
+    <div class="fields">
+      <label><span class="lbl">Лайк</span><span><input id="likeComments" type="checkbox" checked> Лайкать комментарий перед ответом</span></label>
+      <label><span class="lbl">Комментариев за раунд</span><input id="commentBatchSize" type="number" min="1" max="50"></label>
+      <label><span class="lbl">Дневной лимит ответов на комментарии</span><input id="commentDailyCap" type="number" min="1" max="100"></label>
+      <label class="full"><span class="lbl">Prompt для ответов на комментарии</span><textarea id="commentPrompt"></textarea></label>
+    </div>
+    <div class="ai-actions" style="margin:14px 0 0"><button id="resetCommentPrompt">Сбросить prompt комментариев</button></div>
   </section>
 
   <section class="section">

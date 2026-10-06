@@ -23,6 +23,10 @@
     minorTypoChance: 5,
     likePosts: true,
     bookmarkPosts: true,
+    likeComments: true,
+    commentBatchSize: 10,
+    commentDailyCap: 30,
+    commentPrompt: 'You are the author of the original post. Someone left a comment under it. Write a very short, friendly, natural reply to that comment in the same language as the comment. Answer a question if there is one, otherwise agree, add a small nuance or thank them in your own words. Stay on topic, do not invent personal experience, no hashtags, no more than 15 words. Return JSON only: {"reply":"...","shouldReply":true}. Set shouldReply to false for spam, bots, insults or comments that need no answer.',
   });
 
   function normHandle(value) {
@@ -68,6 +72,57 @@
     if (options.seen?.has(post.postId)) return 'duplicate';
     if (options.blockedAuthors?.has(normHandle(post.handle))) return 'blocked-author';
     return null;
+  }
+
+  // "Replying to @a and @b" / "В ответ @a" -> ['a', 'b']
+  const REPLYING_TO_RE = /(?:replying to|в ответ(?:\s+(?:на|пользователю|пользователям))?)\s*/i;
+  function parseReplyingTo(value) {
+    const text = String(value || '');
+    const m = text.match(REPLYING_TO_RE);
+    if (!m) return [];
+    const tail = text.slice(m.index + m[0].length, m.index + m[0].length + 240);
+    const out = [];
+    for (const hit of tail.matchAll(/@([A-Za-z0-9_]{1,15})/g)) { const h = normHandle(hit[1]); if (!out.includes(h)) out.push(h); }
+    return out;
+  }
+
+  // Heading X inserts below a conversation before unrelated recommended posts.
+  function isDiscoverHeading(value) {
+    return /discover more|more posts|sourced from across|откройте для себя|больше постов|ещё посты|другие посты|рекомендуем/i.test(String(value || ''));
+  }
+
+  // Comments under the user's own post: conversation page of their post, or replies addressed to them (notifications / mentions).
+  function commentTargetReason(post, options = {}) {
+    if (!post || !post.postId || !post.handle) return 'meta';
+    if (post.promoted) return 'promoted';
+    if (post.repost) return 'repost';
+    const me = normHandle(options.myHandle);
+    if (!me) return 'no-handle';
+    if (normHandle(post.handle) === me) return 'self';
+    if (post.discover) return 'discover';
+    const replyTo = (post.replyTo || []).map(normHandle);
+    if (options.context === 'conversation') {
+      if (normHandle(options.ownerHandle) !== me) return 'not-my-post';
+      if (!post.afterFocal) return 'above-post';
+      if (replyTo.length && !replyTo.includes(me)) return 'not-reply-to-me';
+    } else if (!replyTo.includes(me)) return 'not-reply-to-me';
+    if (post.answeredByMe) return 'answered';
+    if (String(post.text || '').trim().length < (options.minTextLength ?? 2)) return 'short';
+    if (options.replied?.[post.postId]) return 'replied';
+    if (options.seen?.has(post.postId)) return 'duplicate';
+    return null;
+  }
+
+  function collectCommentTargets(posts, options = {}) {
+    const seen = options.seen || new Set();
+    const out = [];
+    for (const post of posts || []) {
+      if (options.max !== undefined && out.length >= options.max) break;
+      if (commentTargetReason(post, { ...options, seen })) continue;
+      seen.add(post.postId);
+      out.push({ ...post, handle: normHandle(post.handle), text: String(post.text || '').slice(0, 1200), kind: 'comment', status: 'queued' });
+    }
+    return out;
   }
 
   function collectTargets(posts, options = {}) {
@@ -157,14 +212,27 @@
     return actions;
   }
 
-  function canAutoPublish(config, state) {
+  // Comments under your own posts: like only, never bookmark.
+  function commentEngageActions(config = {}) {
+    return config.likeComments !== false ? ['like'] : [];
+  }
+
+  function dailyBudget(config = {}, state = {}, kind = 'post') {
+    const comment = kind === 'comment';
+    const cap = Math.max(1, Number(comment ? config.commentDailyCap : config.dailyCap) || (comment ? DEFAULTS.commentDailyCap : DEFAULTS.dailyCap));
+    const used = !state || state.day !== dayKey() ? 0 : Number(comment ? state.commentsRepliedToday : state.sentToday) || 0;
+    const batch = Math.max(1, Number(comment ? config.commentBatchSize : config.batchSize) || (comment ? DEFAULTS.commentBatchSize : DEFAULTS.batchSize));
+    return { cap, used, left: Math.max(0, cap - used), limit: Math.min(batch, Math.max(0, cap - used)) };
+  }
+
+  function canAutoPublish(config, state, kind = 'post') {
     if (config.mode !== 'auto') return { ok: false, reason: 'not-auto' };
     if (!state || state.day !== dayKey()) return { ok: true };
-    if ((state.sentToday || 0) >= Math.max(1, Number(config.dailyCap) || DEFAULTS.dailyCap)) return { ok: false, reason: 'daily-cap' };
+    if (dailyBudget(config, state, kind).left <= 0) return { ok: false, reason: 'daily-cap' };
     return { ok: true };
   }
 
-  const api = { DEFAULTS, normHandle, isAdLabel, isPromotedSignals, parseStatusHref, targetReason, collectTargets, dayKey, delayMs, parsePrompts, parseReply, isSafetyOnlyResponse, validateReply, assessReplyNaturalness, formatReply, engageActions, canAutoPublish };
+  const api = { DEFAULTS, normHandle, isAdLabel, isPromotedSignals, parseStatusHref, targetReason, collectTargets, dayKey, delayMs, parsePrompts, parseReply, isSafetyOnlyResponse, validateReply, assessReplyNaturalness, formatReply, engageActions, canAutoPublish, parseReplyingTo, isDiscoverHeading, commentTargetReason, collectCommentTargets, commentEngageActions, dailyBudget };
   if (typeof module !== 'undefined') module.exports = api;
   if (typeof window !== 'undefined') window.XAR = api;
   else if (typeof globalThis !== 'undefined') globalThis.XAR = api;
