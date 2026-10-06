@@ -9,7 +9,7 @@
 [![AI](https://img.shields.io/badge/AI-OpenRouter-6655D9)](https://openrouter.ai)
 [![Tests](https://img.shields.io/badge/tests-node%20--test-339933?logo=node.js&logoColor=white)](#-tests)
 [![License](https://img.shields.io/badge/license-PolyForm%20NC%201.0-lightgrey)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-c5ff4a)](manifest.json)
+[![Version](https://img.shields.io/badge/version-0.3.0-c5ff4a)](manifest.json)
 
 [🇷🇺 Русский](README.ru.md) · **🇬🇧 English**
 
@@ -24,6 +24,7 @@
 | | |
 |---|---|
 | 🤖 **AI replies** | Short, on-topic replies via any OpenAI-compatible API (free OpenRouter by default) |
+| 💬 **Replies to comments** | Answers comments under **your own** posts: like ❤️ + AI reply, no bookmark |
 | ❤️ **Auto-like** | The post is liked before replying; already-liked posts are left alone |
 | 🔖 **Auto-bookmark** | The post is bookmarked — even when the button is hidden in the Share menu |
 | 🎛️ **3 modes** | Draft → Confirm → Automatic: choose how much control you keep |
@@ -53,6 +54,22 @@ flowchart LR
 2. The AI decides whether a reply makes sense and drafts a short one.
 3. If the reply passes — the post is **liked** and **bookmarked**.
 4. The reply box opens, the text is inserted and — depending on the mode — published.
+
+## 💬 Replies to comments under your posts
+
+Someone commented on your post — issa can like the comment and answer it.
+
+1. Set **"Ваш @ник"** (Your @handle) in the settings — it's required to know which posts are yours.
+2. Open **your post** on x.com (or **Notifications → Mentions**).
+3. Click **"Ответить на комментарии"** (Reply to comments) in the `[ ISSA ]` panel.
+
+What happens:
+
+- Every comment under your post is **liked** ❤️ and gets a short AI reply 💬 — **no bookmarks**.
+- The AI sees your original post and the comment, and replies in the comment's language (a separate prompt in the **"Ответы на комментарии"** settings section).
+- Each comment is answered **only once** (remembered across days). Your own comments, comments you've already answered yourself, ads and the "Discover more" block are skipped.
+- If the AI decides a comment needs no reply (spam, insults) — it is only liked.
+- Draft / Confirm / Auto modes and delays are shared; comment replies have their **own** daily cap (30) and batch size (10).
 
 ## 🎛️ Modes
 
@@ -131,7 +148,7 @@ issa-autopilot/
 ├── package.json         # npm test
 ├── src/
 │   ├── background.js    # service worker: AI requests, config, emergency stop
-│   ├── content.js       # works with the X feed: targets, like, bookmark, reply
+│   ├── content.js       # works with the X feed: targets, like, bookmark, reply, comment replies
 │   ├── domain.js        # pure logic: filters, limits, AI response parsing
 │   ├── options.html     # dashboard & settings
 │   └── options.js

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "issa",
-  "version": "0.2.1",
-  "description": "Likes, bookmarks and replies to posts on X with bounded automatic mode.",
+  "version": "0.3.0",
+  "description": "Likes, bookmarks and replies to posts on X, and answers comments under your own posts, with bounded automatic mode.",
   "permissions": ["storage", "alarms", "activeTab"],
   "host_permissions": [
     "https://x.com/*",
